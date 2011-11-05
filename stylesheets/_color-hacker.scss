@@ -1,0 +1,35 @@
+@function scale-to-adjust($start, $change) {
+  @if($change > 0) {
+    $end: $start + $change;
+    @return percentage(($end - $start)/(100 - $start));
+  } @else {
+    @return percentage($change / $start);
+  }
+}
+
+@function scale-key($key, $color) {
+  $h: hue($color) - hue($key);
+  $s: saturation($color) - saturation($key);
+  $l: lightness($color) - lightness($key);
+  @return "scale-color(adjust-hue($key, #{$h}), $saturation: #{scale-to-adjust(saturation($key), $s)}, $lightness: #{scale-to-adjust(lightness($key), $l)}); ";
+}
+
+@function adjust-key($key, $color) {
+  $h: hue($color) - hue($key);
+  $s: saturation($color) - saturation($key);
+  $l: lightness($color) - lightness($key);
+  @return "adjust-color($key, $hue: #{$h}, $saturation: #{$s}, $lightness: #{$l}); ";
+}
+
+@function hack-colors($colors, $method: scale){
+  $key: nth($colors, 1);
+  $hack: "$key: #{$key}; ";
+  @for $i from 2 through length($colors) {
+    @if $method == scale {
+     $hack: $hack + "$color-#{$i}: #{scale-key($key, nth($colors, $i))}";
+   } @else {
+     $hack: $hack + "$color-#{$i}: #{adjust-key($key, nth($colors, $i))}";
+   }
+  }
+  @return $hack;
+}
